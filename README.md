@@ -1,34 +1,41 @@
+
 # Trabalho Prático 2 — Algoritmos em Grafos
 
+Projeto desenvolvido em Java para a disciplina de **Projeto e Análise de Algoritmos (PAA)**.
+
 **Aluno:** Adrian Henrique Maranesi Soares  
-**Disciplina:** Projeto e Análise de Algoritmos  
 **Professor:** Douglas Castilho  
 **Linguagem:** Java
 
+---
+
 ## 1. Objetivo
 
-O programa carrega um grafo de um arquivo de texto e permite
-executar os algoritmos solicitados no trabalho. Pelo menu,
-o usuário escolhe a representação do grafo e a operação desejada.
+O programa carrega um grafo a partir de um arquivo de texto e permite executar diferentes algoritmos por meio de um menu interativo.
 
-Foram mantidas as classes e interfaces fornecidas pelo professor.
-Os algoritmos foram separados em classes para facilitar a leitura
-e a organização do projeto.
+O usuário pode escolher a representação do grafo e a operação desejada.
+
+Foram mantidas as classes e interfaces fornecidas pelo professor, organizando os algoritmos em classes separadas para facilitar a leitura e a manutenção do projeto.
 
 ## 2. Organização do projeto
 
 As classes `Vertice` e `Aresta` representam os elementos do grafo.
-As interfaces `Grafo` e `AlgoritmosEmGrafos` definem os métodos
-utilizados pelo programa.
 
-As três representações foram implementadas nas classes
-`MatrizAdjacencia`, `ListaAdjacencia` e `MatrizIncidencia`.
+As interfaces `Grafo` e `AlgoritmosEmGrafos` definem os métodos utilizados pelo programa.
 
-Cada operação possui uma classe própria:
+### Representações de grafos
+
+Foram implementadas três representações:
+
+- `MatrizAdjacencia` — matriz de adjacência.
+- `ListaAdjacencia` — lista de adjacência.
+- `MatrizIncidencia` — matriz de incidência.
+
+### Classes dos algoritmos
 
 | Classe | Responsabilidade |
 |---|---|
-| `BuscaProfundidade` | Executar DFS e classificar as arestas |
+| `BuscaProfundidade` | Executar DFS e classificar arestas |
 | `BuscaLargura` | Executar BFS |
 | `ExisteCiclo` | Detectar ciclos orientados |
 | `ComponentesFortementeConexos` | Identificar componentes e construir o grafo reduzido |
@@ -36,216 +43,231 @@ Cada operação possui uma classe própria:
 | `Dijkstra` | Calcular o caminho mínimo |
 | `FluxoMaximo` | Calcular o fluxo máximo |
 
-A classe `Algoritmos` realiza a leitura do arquivo e encaminha
-as operações para as classes responsáveis. A `Main` contém
-o menu, recebe as entradas e apresenta os resultados.
+A classe `Algoritmos` realiza a leitura do arquivo e encaminha as operações para as classes responsáveis.
 
-O arquivo `FileManager` foi preservado na base, mas a leitura
-implementada utiliza a biblioteca padrão do Java.
+A classe `Main` contém o menu, recebe as entradas do usuário e apresenta os resultados.
 
 ## 3. Entrada e representações
 
-A primeira linha do arquivo informa a quantidade de vértices.
-Nas demais linhas, o primeiro número identifica a origem.
-Cada par `destino-peso` representa uma aresta.
+O programa recebe um arquivo de texto contendo as informações do grafo.
 
-Por exemplo:
+- A primeira linha informa a quantidade de vértices.
+- Nas demais linhas, o primeiro número identifica o vértice de origem.
+- Cada par `destino-peso` representa uma aresta.
+
+### Exemplo de linha de entrada
 
 ```text
 3 1-42; 4-7;
 ```
 
-Essa linha indica uma aresta de 3 para 1, com peso 42, e outra
-de 3 para 4, com peso 7.
+Essa linha representa:
 
-Os vértices são numerados de 0 até V - 1. O grafo é orientado:
-adicionar uma aresta de 3 para 4 não cria automaticamente outra
-de 4 para 3.
+- Uma aresta do vértice 3 para o vértice 1, com peso 42.
+- Uma aresta do vértice 3 para o vértice 4, com peso 7.
 
-Foram implementadas as seguintes representações:
+Os vértices são numerados de `0` até `V - 1`.
 
-- **Matriz de adjacência:** cada posição guarda uma aresta ou
-  `null`, quando não existe ligação.
-- **Lista de adjacência:** cada vértice possui uma lista com
-  suas arestas de saída.
-- **Matriz de incidência:** cada coluna representa uma aresta.
-  O valor -1 indica origem, 1 indica destino e 2 representa
-  um laço. Os pesos ficam em um vetor separado.
+O grafo é orientado. Portanto, adicionar uma aresta de 3 para 4 não cria automaticamente uma aresta de 4 para 3.
 
-As representações aceitam laços e pesos iguais a zero.
-Arestas repetidas com a mesma origem e o mesmo destino
-são rejeitadas.
+### Características das representações
 
-O grau retornado é o grau de saída, contando cada laço uma vez.
-Uma origem omitida no arquivo é considerada um vértice sem
-arestas de saída.
+**Matriz de adjacência**
+
+Cada posição armazena uma aresta ou `null`, quando não existe ligação.
+
+**Lista de adjacência**
+
+Cada vértice possui uma lista contendo suas arestas de saída.
+
+**Matriz de incidência**
+
+Cada coluna representa uma aresta:
+
+- `-1` indica a origem.
+- `1` indica o destino.
+- `2` representa um laço.
+
+Os pesos são armazenados em um vetor separado.
+
+As representações aceitam laços e pesos iguais a zero. Arestas repetidas com a mesma origem e destino são rejeitadas.
 
 ## 4. Algoritmos implementados
 
 ### 4.1. Busca em profundidade — DFS
 
-A busca começa no vértice escolhido pelo usuário e explora
-os vértices ainda não descobertos por chamadas recursivas.
+A busca em profundidade explora os vértices do grafo utilizando chamadas recursivas.
 
-São registrados os tempos de descoberta e finalização e o pai
-de cada vértice. As arestas são classificadas como árvore,
-retorno, avanço ou cruzamento.
+**Funcionamento:**
 
-Depois da exploração inicial, a busca visita os vértices
-restantes para incluir partes que não foram alcançadas
-a partir da origem, formando uma floresta de busca.
+1. Inicia no vértice escolhido.
+2. Visita os vértices ainda não descobertos.
+3. Registra os tempos de descoberta e finalização.
+4. Armazena o pai de cada vértice.
+5. Classifica as arestas encontradas.
+
+**Classificações das arestas:**
+
+- Árvore
+- Retorno
+- Avanço
+- Cruzamento
+
+Após a exploração inicial, o algoritmo também percorre vértices não alcançados, formando uma floresta de busca.
 
 ### 4.2. Busca em largura — BFS
 
-A BFS utiliza uma fila para explorar o grafo por níveis.
+A BFS utiliza uma **fila** para explorar os vértices por níveis.
 
-O resultado mostra a distância em quantidade de arestas,
-a ordem de descoberta e o pai de cada vértice. Distância
-e ordem de descoberta são apresentadas separadamente.
+O algoritmo registra:
 
-Vértices não alcançados recebem distância e ordem iguais
-a -1. O pai da origem também recebe -1, pois ela não
-possui predecessor.
+- Distância em quantidade de arestas.
+- Ordem de descoberta.
+- Pai de cada vértice.
 
-Os pesos não são utilizados na escolha dos caminhos da BFS.
+Os pesos das arestas não são considerados na escolha dos caminhos.
 
-### 4.3. Existência de ciclo
+Vértices não alcançados recebem distância e ordem iguais a `-1`.
 
-A classe `ExisteCiclo` utiliza três estados para os vértices:
-não visitado, em exploração e finalizado.
+### 4.3. Detecção de ciclos
 
-Uma aresta que aponta para um vértice ainda em exploração
-indica um ciclo orientado. A verificação percorre todas
-as partes do grafo e também identifica laços.
+A classe `ExisteCiclo` verifica a existência de ciclos orientados.
 
-O resultado apresentado é verdadeiro ou falso.
+Utiliza três estados:
+
+1. Não visitado.
+2. Em exploração.
+3. Finalizado.
+
+Uma aresta que aponta para um vértice ainda em exploração indica a existência de um ciclo.
+
+O algoritmo também identifica laços e percorre todas as partes do grafo.
 
 ### 4.4. Componentes fortemente conexos
 
-Foi utilizado o algoritmo de Kosaraju.
+Foi utilizado o algoritmo de **Kosaraju**.
 
-Primeiro, uma busca registra a ordem de finalização dos
-vértices. Depois, as arestas são invertidas e uma segunda
-busca percorre os vértices na ordem inversa dessa finalização.
+**Etapas:**
 
-O programa mostra os vértices de cada componente e constrói
-o grafo reduzido. Nesse grafo, cada componente passa a ser
-um único vértice.
+1. Executar uma busca para registrar a ordem de finalização.
+2. Inverter as arestas do grafo.
+3. Executar uma nova busca na ordem inversa de finalização.
+4. Identificar os componentes fortemente conexos.
+5. Construir o grafo reduzido.
 
-As ligações internas são removidas e as ligações repetidas
-entre componentes são unificadas. O peso padrão 1 representa
-apenas conectividade, sem somar os pesos originais.
+No grafo reduzido, cada componente passa a ser representado por um único vértice.
 
 ### 4.5. Árvore geradora mínima — Kruskal
 
-As arestas são ordenadas pelo peso utilizando Merge Sort.
-Depois, são examinadas da menor para a maior.
+O algoritmo de Kruskal calcula uma árvore geradora mínima.
 
-Os vetores de representantes e alturas controlam os conjuntos
-de vértices conectados. Uma ligação é aceita somente quando
-seus extremos pertencem a conjuntos diferentes, evitando ciclos.
+**Funcionamento:**
 
-Em um grafo conectado com V vértices, a árvore geradora possui
-V - 1 arestas. Se o grafo for desconexo, o programa informa
-que não existe uma árvore geradora para todos os vértices.
+1. Obtém as arestas do grafo.
+2. Ordena as arestas pelo peso usando Merge Sort.
+3. Analisa as arestas da menor para a maior.
+4. Verifica se os vértices pertencem a conjuntos diferentes.
+5. Adiciona a aresta caso não forme ciclo.
+6. Retorna as arestas selecionadas e o custo total.
 
-Kruskal trabalha com ligações não orientadas. Como a entrada
-contém arcos, o menu solicita confirmação para ignorar os
-sentidos somente nesse cálculo. Cada arco passa a ser uma
-ligação candidata. Essa convenção não modifica o grafo original.
+São utilizados vetores de representantes e alturas para controlar os conjuntos disjuntos.
 
-O resultado apresenta as arestas escolhidas e o custo total.
+Para um grafo conectado com `V` vértices, a árvore geradora possui `V - 1` arestas.
+
+Como Kruskal considera ligações não orientadas, o menu solicita confirmação para desconsiderar o sentido das arestas durante esse cálculo.
+
+O grafo original não é modificado.
 
 ### 4.6. Caminho mínimo — Dijkstra
 
-O usuário informa os vértices de origem e destino.
+O algoritmo de Dijkstra encontra um caminho de custo mínimo entre dois vértices.
 
-O algoritmo mantém as menores distâncias conhecidas e escolhe,
-por varredura, o vértice ainda não processado de menor distância.
-Em seguida, verifica se suas arestas permitem melhorar o custo
-de chegada aos vizinhos.
+**Funcionamento:**
 
-As arestas anteriores são guardadas para reconstruir o caminho.
-O resultado apresenta suas arestas e a soma dos pesos.
+1. Recebe os vértices de origem e destino.
+2. Inicializa os vetores de distâncias e controle.
+3. Seleciona o vértice não processado de menor distância.
+4. Analisa as arestas que saem desse vértice.
+5. Atualiza as distâncias quando encontra um caminho melhor.
+6. Armazena as arestas anteriores.
+7. Reconstrói o caminho encontrado.
 
-Pesos negativos são rejeitados. Quando não existe caminho,
-o programa apresenta uma mensagem. Se origem e destino
-forem iguais, o caminho é vazio e tem custo zero.
+O algoritmo não aceita pesos negativos.
 
-### 4.7. Fluxo máximo
+Caso não exista um caminho entre origem e destino, uma mensagem é apresentada.
 
-Foi utilizado Edmonds-Karp, com buscas em largura em uma
-matriz residual.
+Se a origem e o destino forem iguais, o custo será zero.
 
-Os pesos representam capacidades não negativas. A fonte
-e o sorvedouro são informados pelo usuário e devem
-ser diferentes.
+### 4.7. Fluxo máximo — Edmonds-Karp
 
-Cada caminho encontrado permite aumentar o fluxo até o limite
-da menor capacidade disponível nele. As capacidades residuais
-são atualizadas nos sentidos direto e reverso.
+O fluxo máximo é calculado utilizando o algoritmo **Edmonds-Karp**.
 
-O cálculo termina quando não existe mais caminho aumentante,
-retornando o fluxo total encontrado.
+O algoritmo utiliza buscas em largura (BFS) sobre uma matriz residual.
 
-## 5. Uso de vetores estáticos no Dijkstra e no Kruskal
+**Etapas:**
 
-Conforme a orientação recebida, Dijkstra e Kruskal foram
-implementados utilizando vetores estáticos, entendidos neste
-projeto como arrays de tamanho fixo durante o processamento.
+1. Recebe o vértice fonte e o sorvedouro.
+2. Procura um caminho aumentante usando BFS.
+3. Identifica a menor capacidade residual do caminho.
+4. Atualiza as capacidades residuais.
+5. Repete o processo enquanto existirem caminhos aumentantes.
+6. Retorna o fluxo máximo encontrado.
 
-No Dijkstra, esses vetores armazenam:
+Os pesos representam capacidades não negativas.
 
-- As menores distâncias conhecidas.
-- Os vértices já processados.
-- As arestas anteriores de cada caminho.
-- As arestas utilizadas na reconstrução do resultado.
+## 5. Utilização de vetores estáticos
 
-No Kruskal, os vetores armazenam:
+Conforme as exigências do trabalho, os algoritmos de Dijkstra e Kruskal utilizam arrays de tamanho fixo durante o processamento.
 
-- As arestas que serão ordenadas.
-- O auxiliar utilizado pelo Merge Sort.
-- As arestas escolhidas para a árvore.
-- Os representantes e as alturas dos conjuntos disjuntos.
+### Dijkstra
 
-Os tamanhos são definidos a partir da quantidade de vértices
-e arestas, sem redimensionamento durante o processamento.
+Os vetores armazenam:
 
-A conversão final para coleções atende aos tipos de retorno
-exigidos pela interface fornecida pelo professor. As consultas
-ao grafo também utilizam os retornos previstos nessa interface.
+- Menores distâncias conhecidas.
+- Vértices já processados.
+- Arestas anteriores de cada caminho.
+- Arestas utilizadas na reconstrução do resultado.
 
-A restrição de vetores estáticos foi aplicada ao processamento
-do Dijkstra e do Kruskal. A leitura do arquivo e as demais
-partes do programa podem utilizar coleções.
+### Kruskal
 
-Considerando as arestas já obtidas do grafo, os custos de
-processamento são:
+Os vetores armazenam:
 
-| Algoritmo | Complexidade |
+- Arestas que serão ordenadas.
+- Vetor auxiliar do Merge Sort.
+- Arestas escolhidas para a árvore.
+- Representantes dos conjuntos disjuntos.
+- Alturas dos conjuntos.
+
+Os tamanhos dos vetores são definidos a partir da quantidade de vértices e arestas.
+
+Não ocorre redimensionamento durante o processamento desses algoritmos.
+
+## 6. Complexidade dos algoritmos
+
+Considerando as arestas já obtidas do grafo:
+
+| Algoritmo | Complexidade de tempo |
 |---|---|
-| Dijkstra, com seleção por varredura | O(V² + E) |
-| Kruskal, com Merge Sort e conjuntos disjuntos | O(V + E log E) |
+| Dijkstra (seleção por varredura) | `O(V² + E)` |
+| Kruskal (Merge Sort e conjuntos disjuntos) | `O(V + E log E)` |
 
-V representa a quantidade de vértices e E, a quantidade de
-arestas. O custo de consultar e preparar as arestas é adicional
-e depende da representação escolhida.
+**Onde:**
 
-## 6. Bibliografia para aprofundamento
+- `V` representa a quantidade de vértices.
+- `E` representa a quantidade de arestas.
 
-As obras abaixo são referências para o estudo dos algoritmos
-e de suas análises de complexidade.
+O custo de consultar e preparar as arestas depende da representação utilizada.
 
-CORMEN, Thomas H.; LEISERSON, Charles E.; RIVEST, Ronald L.;
-STEIN, Clifford. *Introduction to Algorithms*. 4. ed.
-Cambridge, MA: MIT Press, 2022.
+## 7. Referências bibliográficas
 
-KLEINBERG, Jon; TARDOS, Éva. *Algorithm Design*. 1. ed.
-Boston: Pearson/Addison-Wesley, 2006.
+CORMEN, Thomas H.; LEISERSON, Charles E.; RIVEST, Ronald L.; STEIN, Clifford. *Introduction to Algorithms*. 4. ed. MIT Press, 2022.
 
-## 7. Apoio de inteligência artificial
+KLEINBERG, Jon; TARDOS, Éva. *Algorithm Design*. Pearson/Addison-Wesley, 2006.
 
-O ChatGPT foi utilizado como apoio ao estudo dos algoritmos,
-à elaboração de trechos da implementação e à organização
-e formatação deste README.#   T r a b a l h o P r a t i c o 2 - P A A  
- 
+## 8. Apoio de inteligência artificial
+
+O ChatGPT foi utilizado como ferramenta de apoio ao estudo dos algoritmos, à elaboração de trechos da implementação e à organização da documentação do projeto.
+
+---
+
+**Trabalho Prático 2 — Projeto e Análise de Algoritmos**
