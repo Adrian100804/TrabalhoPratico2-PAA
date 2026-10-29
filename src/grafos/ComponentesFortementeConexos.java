@@ -13,24 +13,29 @@ public class ComponentesFortementeConexos {
         Aresta[][] adjacencias = prepararAdjacencias(grafo);
 
         boolean[] visitado = new boolean[quantidadeVertices];
-        ArrayList<Integer> ordem = new ArrayList<>();
+        int[] ordem = new int[quantidadeVertices];
+        int[] pilha = new int[quantidadeVertices];
+        int[] proxima = new int[quantidadeVertices];
 
-        // Primeira busca: registra a ordem de finalizacao.
+        int totalFinalizados = 0;
+
         for (int vertice = 0;
              vertice < quantidadeVertices;
              vertice++) {
 
             if (!visitado[vertice]) {
-                registrarFinalizacao(
-                        vertice,
-                        adjacencias,
-                        visitado,
-                        ordem
+                totalFinalizados = registrarFinalizacao(
+                    vertice,
+                    adjacencias,
+                    visitado,
+                    ordem,
+                    totalFinalizados,
+                    pilha,
+                    proxima
                 );
             }
         }
 
-        // Inverte o sentido de todas as arestas.
         Aresta[][] transposto = transpor(adjacencias);
 
         componente = new int[quantidadeVertices];
@@ -38,15 +43,15 @@ public class ComponentesFortementeConexos {
 
         int quantidadeComponentes = 0;
 
-        // Segunda busca: percorre a ordem inversa de finalizacao.
-        for (int i = ordem.size() - 1; i >= 0; i--) {
-            int vertice = ordem.get(i);
+        for (int i = totalFinalizados - 1; i >= 0; i--) {
+            int vertice = ordem[i];
 
             if (componente[vertice] == -1) {
                 marcarComponente(
-                        vertice,
-                        transposto,
-                        quantidadeComponentes
+                    vertice,
+                    transposto,
+                    quantidadeComponentes,
+                    pilha
                 );
 
                 quantidadeComponentes++;
@@ -54,55 +59,68 @@ public class ComponentesFortementeConexos {
         }
 
         return construirGrafoReduzido(
-                adjacencias,
-                quantidadeComponentes
+            adjacencias,
+            quantidadeComponentes
         );
     }
 
-    private void registrarFinalizacao(
+    private int registrarFinalizacao(
             int origem,
             Aresta[][] adjacencias,
             boolean[] visitado,
-            ArrayList<Integer> ordem
+            int[] ordem,
+            int total,
+            int[] pilha,
+            int[] proxima
     ) {
+        int topo = 0;
+
+        pilha[0] = origem;
         visitado[origem] = true;
 
-        for (Aresta aresta : adjacencias[origem]) {
-            int destino = aresta.destino().id();
+        while (topo >= 0) {
+            int atual = pilha[topo];
 
-            if (!visitado[destino]) {
-                registrarFinalizacao(
-                        destino,
-                        adjacencias,
-                        visitado,
-                        ordem
-                );
+            if (proxima[atual] >= adjacencias[atual].length) {
+                ordem[total++] = atual;
+                topo--;
+                continue;
+            }
+
+            int vizinho =
+                adjacencias[atual][proxima[atual]++]
+                    .destino().id();
+
+            if (!visitado[vizinho]) {
+                visitado[vizinho] = true;
+                pilha[++topo] = vizinho;
             }
         }
 
-        // Adiciona somente depois de explorar os destinos.
-        ordem.add(origem);
+        return total;
     }
 
     private Aresta[][] transpor(Aresta[][] adjacencias) {
         int quantidadeVertices = adjacencias.length;
 
-        int[] quantidadeEntradas = new int[quantidadeVertices];
+        int[] quantidadeEntradas =
+            new int[quantidadeVertices];
 
-        // Conta quantas arestas cada vertice recebera no transposto.
         for (Aresta[] saidas : adjacencias) {
             for (Aresta aresta : saidas) {
                 quantidadeEntradas[aresta.destino().id()]++;
             }
         }
 
-        Aresta[][] transposto = new Aresta[quantidadeVertices][];
+        Aresta[][] transposto =
+            new Aresta[quantidadeVertices][];
 
         for (int vertice = 0;
              vertice < quantidadeVertices;
              vertice++) {
+
             transposto[vertice] =
-                    new Aresta[quantidadeEntradas[vertice]];
+                new Aresta[quantidadeEntradas[vertice]];
         }
 
         int[] posicao = new int[quantidadeVertices];
@@ -113,12 +131,13 @@ public class ComponentesFortementeConexos {
                 int destino = aresta.destino().id();
 
                 Aresta inversa = new Aresta(
-                        new Vertice(destino),
-                        new Vertice(origem),
-                        aresta.peso()
+                    new Vertice(destino),
+                    new Vertice(origem),
+                    aresta.peso()
                 );
 
-                transposto[destino][posicao[destino]++] = inversa;
+                transposto[destino][posicao[destino]++] =
+                    inversa;
             }
         }
 
@@ -128,19 +147,24 @@ public class ComponentesFortementeConexos {
     private void marcarComponente(
             int origem,
             Aresta[][] transposto,
-            int grupo
+            int grupo,
+            int[] pilha
     ) {
+        int topo = 0;
+
+        pilha[0] = origem;
         componente[origem] = grupo;
 
-        for (Aresta aresta : transposto[origem]) {
-            int destino = aresta.destino().id();
+        while (topo >= 0) {
+            int atual = pilha[topo--];
 
-            if (componente[destino] == -1) {
-                marcarComponente(
-                        destino,
-                        transposto,
-                        grupo
-                );
+            for (Aresta aresta : transposto[atual]) {
+                int vizinho = aresta.destino().id();
+
+                if (componente[vizinho] == -1) {
+                    componente[vizinho] = grupo;
+                    pilha[++topo] = vizinho;
+                }
             }
         }
     }
@@ -150,23 +174,21 @@ public class ComponentesFortementeConexos {
             int quantidadeComponentes
     ) {
         ListaAdjacencia reduzido =
-                new ListaAdjacencia(quantidadeComponentes);
+            new ListaAdjacencia(quantidadeComponentes);
 
         for (Aresta[] saidas : adjacencias) {
             for (Aresta aresta : saidas) {
                 int grupoOrigem =
-                        componente[aresta.origem().id()];
+                    componente[aresta.origem().id()];
 
                 int grupoDestino =
-                        componente[aresta.destino().id()];
+                    componente[aresta.destino().id()];
 
-                // Arestas internas nao aparecem no grafo reduzido.
                 if (grupoOrigem != grupoDestino) {
                     Vertice origem = new Vertice(grupoOrigem);
                     Vertice destino = new Vertice(grupoDestino);
 
                     if (!reduzido.existeAresta(origem, destino)) {
-                        // Peso 1 representa apenas conectividade.
                         reduzido.adicionarAresta(origem, destino);
                     }
                 }
@@ -177,39 +199,6 @@ public class ComponentesFortementeConexos {
     }
 
     private Aresta[][] prepararAdjacencias(Grafo grafo) {
-        int quantidadeVertices = grafo.numeroDeVertices();
-
-        Aresta[][] resultado = new Aresta[quantidadeVertices][];
-
-        try {
-            for (int origem = 0;
-                 origem < quantidadeVertices;
-                 origem++) {
-
-                Vertice verticeOrigem = new Vertice(origem);
-                ArrayList<Aresta> saidas = new ArrayList<>();
-
-                for (Vertice destino :
-                        grafo.adjacentesDe(verticeOrigem)) {
-
-                    saidas.addAll(
-                            grafo.arestasEntre(
-                                    verticeOrigem,
-                                    destino
-                            )
-                    );
-                }
-
-                resultado[origem] = saidas.toArray(new Aresta[0]);
-            }
-
-        } catch (Exception erro) {
-            throw new IllegalArgumentException(
-                    "Nao foi possivel consultar as arestas do grafo.",
-                    erro
-            );
-        }
-
-        return resultado;
+        return ArestasDoGrafo.porOrigem(grafo);
     }
 }

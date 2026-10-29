@@ -17,7 +17,7 @@ public class Main {
 
         try {
             System.out.print(
-                    "Caminho do arquivo (Enter para Teste.txt): "
+                "Caminho do arquivo (Enter para Teste.txt): "
             );
 
             if (!teclado.hasNextLine()) {
@@ -55,7 +55,7 @@ public class Main {
 
                 default:
                     throw new IllegalArgumentException(
-                            "Representacao invalida."
+                        "Representacao invalida."
                     );
             }
 
@@ -64,16 +64,16 @@ public class Main {
             System.out.println();
             System.out.println("Grafo carregado!");
             System.out.println(
-                    "Vertices: " + grafo.numeroDeVertices()
+                "Vertices: " + grafo.numeroDeVertices()
             );
             System.out.println(
-                    "Arestas: " + grafo.numeroDeArestas()
+                "Arestas: " + grafo.numeroDeArestas()
             );
 
         } catch (Exception erro) {
             System.out.println(
-                    "Nao foi possivel carregar o grafo: "
-                            + erro.getMessage()
+                "Nao foi possivel carregar o grafo: "
+                + erro.getMessage()
             );
             return;
         }
@@ -87,7 +87,7 @@ public class Main {
 
             try {
                 int opcao = Integer.parseInt(
-                        teclado.nextLine().trim()
+                    teclado.nextLine().trim()
                 );
 
                 switch (opcao) {
@@ -99,52 +99,57 @@ public class Main {
                         int inicio = lerNumero("Vertice inicial: ");
 
                         algoritmos.definirInicio(inicio);
+
+                        long tempoInicio = System.nanoTime();
+
                         algoritmos.buscaEmProfundidade(grafo);
+
+                        mostrarTempo(tempoInicio);
 
                         System.out.println();
                         System.out.println(
-                                "Vertice | Descoberta | Finalizacao | Pai"
+                            "Vertice | Descoberta | Finalizacao | Pai"
                         );
 
                         for (int v = 0;
                              v < grafo.numeroDeVertices();
                              v++) {
+
                             System.out.println(
-                                    v
-                                            + " | "
-                                            + algoritmos.descoberta[v]
-                                            + " | "
-                                            + algoritmos.finalizacao[v]
-                                            + " | "
-                                            + algoritmos.pai[v]
+                                v
+                                + " | " + algoritmos.descoberta[v]
+                                + " | " + algoritmos.finalizacao[v]
+                                + " | " + algoritmos.pai[v]
                             );
                         }
 
-                        System.out.println("Pai -1 indica uma raiz.");
+                        System.out.println(
+                            "Pai -1 indica uma raiz."
+                        );
 
                         System.out.println();
                         System.out.println("Arestas de arvore:");
+
                         mostrarArestas(
-                                algoritmos.arestasDeArvore(grafo),
-                                true
+                            algoritmos.arestasDeArvore(grafo), true
                         );
 
                         System.out.println("Arestas de retorno:");
+
                         mostrarArestas(
-                                algoritmos.arestasDeRetorno(grafo),
-                                true
+                            algoritmos.arestasDeRetorno(grafo), true
                         );
 
                         System.out.println("Arestas de avanco:");
+
                         mostrarArestas(
-                                algoritmos.arestasDeAvanco(grafo),
-                                true
+                            algoritmos.arestasDeAvanco(grafo), true
                         );
 
                         System.out.println("Arestas de cruzamento:");
+
                         mostrarArestas(
-                                algoritmos.arestasDeCruzamento(grafo),
-                                true
+                            algoritmos.arestasDeCruzamento(grafo), true
                         );
 
                         break;
@@ -154,80 +159,103 @@ public class Main {
                         int inicio = lerNumero("Vertice inicial: ");
 
                         algoritmos.definirInicio(inicio);
+
+                        long tempoInicio = System.nanoTime();
+
                         algoritmos.buscaEmLargura(grafo);
+
+                        mostrarTempo(tempoInicio);
 
                         System.out.println();
                         System.out.println(
-                                "Vertice | Distancia | Ordem de descoberta | Pai"
+                            "Vertice | Distancia | Ordem de descoberta | Pai"
                         );
 
                         for (int v = 0;
                              v < grafo.numeroDeVertices();
                              v++) {
+
                             System.out.println(
-                                    v
-                                            + " | "
-                                            + algoritmos.distanciaBfs[v]
-                                            + " | "
-                                            + algoritmos.ordemDescobertaBfs[v]
-                                            + " | "
-                                            + algoritmos.pai[v]
+                                v
+                                + " | " + algoritmos.distanciaBfs[v]
+                                + " | " + algoritmos.ordemDescobertaBfs[v]
+                                + " | " + algoritmos.pai[v]
                             );
                         }
 
                         System.out.println(
-                                "Distancia em quantidade de arestas."
+                            "Distancia em quantidade de arestas."
                         );
                         System.out.println(
-                                "Distancia e ordem -1: vertice nao alcancado."
+                            "Distancia e ordem -1: vertice nao alcancado."
                         );
                         System.out.println(
-                                "Pai -1: ausencia de predecessor."
+                            "Pai -1: ausencia de predecessor."
                         );
 
                         break;
                     }
 
                     case 3: {
+                        long tempoInicio = System.nanoTime();
+
                         boolean resultado =
-                                algoritmos.existeCiclo(grafo);
+                            algoritmos.existeCiclo(grafo);
+
+                        mostrarTempo(tempoInicio);
 
                         System.out.println(
-                                "Existe ciclo: " + resultado
+                            "Existe ciclo: " + resultado
                         );
 
                         break;
                     }
 
                     case 4: {
+                        long tempoInicio = System.nanoTime();
+
                         Grafo reduzido =
-                                algoritmos.componentesFortementeConexos(
-                                        grafo
-                                );
+                            algoritmos.componentesFortementeConexos(
+                                grafo
+                            );
+
+                        mostrarTempo(tempoInicio);
 
                         System.out.println();
                         System.out.println(
-                                "Quantidade de componentes: "
-                                        + reduzido.numeroDeVertices()
+                            "Quantidade de componentes: "
+                            + reduzido.numeroDeVertices()
                         );
 
+                        StringBuilder[] porComponente =
+                            new StringBuilder[
+                                reduzido.numeroDeVertices()
+                            ];
+
                         for (int grupo = 0;
-                             grupo < reduzido.numeroDeVertices();
+                             grupo < porComponente.length;
                              grupo++) {
 
-                            System.out.print(
-                                    "Componente " + grupo + ": "
+                            porComponente[grupo] =
+                                new StringBuilder();
+                        }
+
+                        for (int v = 0;
+                             v < grafo.numeroDeVertices();
+                             v++) {
+
+                            porComponente[algoritmos.componente[v]]
+                                .append(v).append(' ');
+                        }
+
+                        for (int grupo = 0;
+                             grupo < porComponente.length;
+                             grupo++) {
+
+                            System.out.println(
+                                "Componente " + grupo
+                                + ": " + porComponente[grupo]
                             );
-
-                            for (int v = 0;
-                                 v < grafo.numeroDeVertices();
-                                 v++) {
-                                if (algoritmos.componente[v] == grupo) {
-                                    System.out.print(v + " ");
-                                }
-                            }
-
-                            System.out.println();
                         }
 
                         System.out.println();
@@ -240,15 +268,15 @@ public class Main {
 
                     case 5: {
                         System.out.println(
-                                "Kruskal calcula uma AGM nao orientada."
+                            "Kruskal calcula uma AGM nao orientada."
                         );
                         System.out.println(
-                                "Neste calculo, os sentidos das arestas "
-                                        + "serao ignorados."
+                            "Neste calculo, os sentidos das arestas "
+                            + "serao ignorados."
                         );
 
                         System.out.print(
-                                "Digite SIM para continuar: "
+                            "Digite SIM para continuar: "
                         );
 
                         if (!teclado.hasNextLine()) {
@@ -256,28 +284,31 @@ public class Main {
                         }
 
                         String resposta =
-                                teclado.nextLine().trim();
+                            teclado.nextLine().trim();
 
                         if (!resposta.equalsIgnoreCase("SIM")) {
                             System.out.println("Calculo cancelado.");
                             break;
                         }
 
+                        long tempoInicio = System.nanoTime();
+
                         Collection<Aresta> arvore =
-                                algoritmos.arvoreGeradoraMinima(grafo);
+                            algoritmos.arvoreGeradoraMinima(grafo);
 
                         double custo =
-                                algoritmos.custoDaArvoreGeradora(
-                                        grafo,
-                                        arvore
-                                );
+                            algoritmos.custoDaArvoreGeradora(
+                                grafo, arvore
+                            );
+
+                        mostrarTempo(tempoInicio);
 
                         System.out.println("Arestas da AGM:");
 
                         mostrarArestas(arvore, false);
 
                         System.out.println(
-                                "Custo total da AGM: " + custo
+                            "Custo total da AGM: " + custo
                         );
 
                         break;
@@ -285,41 +316,40 @@ public class Main {
 
                     case 6: {
                         Vertice origem = new Vertice(
-                                lerNumero("Vertice de origem: ")
+                            lerNumero("Vertice de origem: ")
                         );
 
                         Vertice destino = new Vertice(
-                                lerNumero("Vertice de destino: ")
+                            lerNumero("Vertice de destino: ")
                         );
 
+                        long tempoInicio = System.nanoTime();
+
                         ArrayList<Aresta> caminho =
-                                algoritmos.caminhoMinimo(
-                                        grafo,
-                                        origem,
-                                        destino
-                                );
+                            algoritmos.caminhoMinimo(
+                                grafo, origem, destino
+                            );
 
                         double custo =
-                                algoritmos.custoDoCaminhoMinimo(
-                                        grafo,
-                                        caminho,
-                                        origem,
-                                        destino
-                                );
+                            algoritmos.custoDoCaminhoMinimo(
+                                grafo, caminho, origem, destino
+                            );
+
+                        mostrarTempo(tempoInicio);
 
                         System.out.println("Caminho minimo:");
 
                         if (caminho.isEmpty()
                                 && origem.id() == destino.id()) {
                             System.out.println(
-                                    "A origem e o destino sao o mesmo vertice."
+                                "A origem e o destino sao o mesmo vertice."
                             );
                         } else {
                             mostrarArestas(caminho, true);
                         }
 
                         System.out.println(
-                                "Custo total do caminho: " + custo
+                            "Custo total do caminho: " + custo
                         );
 
                         break;
@@ -329,16 +359,17 @@ public class Main {
                         int origem = lerNumero("Fonte: ");
                         int destino = lerNumero("Sorvedouro: ");
 
-                        algoritmos.definirTerminais(
-                                origem,
-                                destino
-                        );
+                        algoritmos.definirTerminais(origem, destino);
+
+                        long tempoInicio = System.nanoTime();
 
                         double fluxo =
-                                algoritmos.fluxoMaximo(grafo);
+                            algoritmos.fluxoMaximo(grafo);
+
+                        mostrarTempo(tempoInicio);
 
                         System.out.println(
-                                "Fluxo maximo: " + fluxo
+                            "Fluxo maximo: " + fluxo
                         );
 
                         break;
@@ -350,12 +381,13 @@ public class Main {
 
             } catch (NumberFormatException erro) {
                 System.out.println(
-                        "Entrada invalida: digite um numero inteiro."
+                    "Entrada invalida: digite um numero inteiro."
                 );
 
             } catch (Exception erro) {
                 System.out.println(
-                        "Nao foi possivel executar: " + erro.getMessage()
+                    "Nao foi possivel executar: "
+                    + erro.getMessage()
                 );
             }
         }
@@ -366,12 +398,22 @@ public class Main {
 
         if (!teclado.hasNextLine()) {
             throw new IllegalStateException(
-                    "A entrada foi encerrada."
+                "A entrada foi encerrada."
             );
         }
 
         return Integer.parseInt(
-                teclado.nextLine().trim()
+            teclado.nextLine().trim()
+        );
+    }
+
+    private static void mostrarTempo(long inicio) {
+        double milissegundos =
+            (System.nanoTime() - inicio) / 1_000_000.0;
+
+        System.out.printf(
+            "Tempo de calculo: %.3f ms%n",
+            milissegundos
         );
     }
 
@@ -402,11 +444,11 @@ public class Main {
 
         for (Aresta aresta : arestas) {
             System.out.println(
-                    aresta.origem().id()
-                            + ligacao
-                            + aresta.destino().id()
-                            + " | peso: "
-                            + aresta.peso()
+                aresta.origem().id()
+                + ligacao
+                + aresta.destino().id()
+                + " | peso: "
+                + aresta.peso()
             );
         }
     }
@@ -415,24 +457,26 @@ public class Main {
             Grafo grafo
     ) throws Exception {
         System.out.println(
-                "Vertices: " + grafo.numeroDeVertices()
+            "Vertices: " + grafo.numeroDeVertices()
         );
         System.out.println(
-                "Arestas: " + grafo.numeroDeArestas()
+            "Arestas: " + grafo.numeroDeArestas()
         );
 
         if (grafo.numeroDeArestas() == 0) {
             System.out.println(
-                    "Nao existem ligacoes entre componentes diferentes."
+                "Nao existem ligacoes entre componentes diferentes."
             );
             return;
         }
 
         for (Vertice origem : grafo.vertices()) {
-            for (Vertice destino : grafo.adjacentesDe(origem)) {
+            for (Vertice destino :
+                    grafo.adjacentesDe(origem)) {
+
                 System.out.println(
-                        "Componente " + origem.id()
-                                + " -> Componente " + destino.id()
+                    "Componente " + origem.id()
+                    + " -> Componente " + destino.id()
                 );
             }
         }

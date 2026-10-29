@@ -35,13 +35,14 @@ public class BuscaLargura {
 
         if (inicio < 0 || inicio >= quantidadeVertices) {
             throw new IllegalArgumentException(
-                    "Vertice inicial invalido."
+                "Vertice inicial invalido."
             );
         }
 
         Aresta[][] adjacencias = prepararAdjacencias(grafo);
 
         int[] fila = new int[quantidadeVertices];
+
         int frente = 0;
         int fim = 0;
         int ordem = 1;
@@ -57,16 +58,14 @@ public class BuscaLargura {
             for (Aresta aresta : adjacencias[origem]) {
                 int destino = aresta.destino().id();
 
-                // Somente vertices ainda nao descobertos entram na fila.
                 if (distanciaBfs[destino] == -1) {
                     distanciaBfs[destino] =
-                            distanciaBfs[origem] + 1;
+                        distanciaBfs[origem] + 1;
 
                     pai[destino] = origem;
                     ordemDescobertaBfs[destino] = ++ordem;
 
                     fila[fim++] = destino;
-
                     arvore.add(aresta);
                 }
             }
@@ -76,39 +75,6 @@ public class BuscaLargura {
     }
 
     private Aresta[][] prepararAdjacencias(Grafo grafo) {
-        int quantidadeVertices = grafo.numeroDeVertices();
-
-        Aresta[][] resultado = new Aresta[quantidadeVertices][];
-
-        try {
-            for (int origem = 0;
-                 origem < quantidadeVertices;
-                 origem++) {
-
-                Vertice verticeOrigem = new Vertice(origem);
-                ArrayList<Aresta> saidas = new ArrayList<>();
-
-                for (Vertice destino :
-                        grafo.adjacentesDe(verticeOrigem)) {
-
-                    saidas.addAll(
-                            grafo.arestasEntre(
-                                    verticeOrigem,
-                                    destino
-                            )
-                    );
-                }
-
-                resultado[origem] = saidas.toArray(new Aresta[0]);
-            }
-
-        } catch (Exception erro) {
-            throw new IllegalArgumentException(
-                    "Nao foi possivel consultar as arestas do grafo.",
-                    erro
-            );
-        }
-
-        return resultado;
+        return ArestasDoGrafo.porOrigem(grafo);
     }
 }

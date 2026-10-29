@@ -12,15 +12,18 @@ public class Kruskal {
         Aresta[] auxiliar = new Aresta[arestas.length];
 
         int quantidadeNecessaria =
-                Math.max(0, quantidadeVertices - 1);
+            Math.max(0, quantidadeVertices - 1);
 
         Aresta[] escolhidas =
-                new Aresta[quantidadeNecessaria];
+            new Aresta[quantidadeNecessaria];
 
-        int[] representante = new int[quantidadeVertices];
-        int[] altura = new int[quantidadeVertices];
+        int[] representante =
+            new int[quantidadeVertices];
 
-        // Inicialmente, cada vertice pertence ao proprio conjunto.
+        int[] altura =
+            new int[quantidadeVertices];
+
+        // Cada vertice comeca no proprio conjunto.
         for (int vertice = 0;
              vertice < quantidadeVertices;
              vertice++) {
@@ -35,7 +38,12 @@ public class Kruskal {
             int origem = aresta.origem().id();
             int destino = aresta.destino().id();
 
-            if (unir(origem, destino, representante, altura)) {
+            if (unir(
+                    origem,
+                    destino,
+                    representante,
+                    altura
+            )) {
                 escolhidas[quantidadeEscolhida++] = aresta;
 
                 if (quantidadeEscolhida == quantidadeNecessaria) {
@@ -46,14 +54,12 @@ public class Kruskal {
 
         if (quantidadeEscolhida != quantidadeNecessaria) {
             throw new IllegalArgumentException(
-                    "Grafo desconexo: nao existe arvore geradora."
+                "Grafo desconexo: nao existe arvore geradora."
             );
         }
 
-        // O processamento terminou.
-        // Converte apenas para o retorno exigido pela interface.
         ArrayList<Aresta> resultado =
-                new ArrayList<>(quantidadeEscolhida);
+            new ArrayList<>(quantidadeEscolhida);
 
         for (int i = 0; i < quantidadeEscolhida; i++) {
             resultado.add(escolhidas[i]);
@@ -63,55 +69,10 @@ public class Kruskal {
     }
 
     private Aresta[] obterArestas(Grafo grafo) {
-        Aresta[] resultado =
-                new Aresta[grafo.numeroDeArestas()];
-
-        int posicao = 0;
-
-        try {
-            for (int origem = 0;
-                 origem < grafo.numeroDeVertices();
-                 origem++) {
-
-                Vertice verticeOrigem = new Vertice(origem);
-
-                for (Vertice destino :
-                        grafo.adjacentesDe(verticeOrigem)) {
-
-                    for (Aresta aresta :
-                            grafo.arestasEntre(
-                                    verticeOrigem,
-                                    destino
-                            )) {
-
-                        if (posicao >= resultado.length) {
-                            throw new IllegalArgumentException(
-                                    "Quantidade de arestas inconsistente."
-                            );
-                        }
-
-                        resultado[posicao++] = aresta;
-                    }
-                }
-            }
-
-        } catch (Exception erro) {
-            throw new IllegalArgumentException(
-                    "Nao foi possivel consultar as arestas do grafo.",
-                    erro
-            );
-        }
-
-        if (posicao != resultado.length) {
-            throw new IllegalArgumentException(
-                    "Quantidade de arestas inconsistente."
-            );
-        }
-
-        return resultado;
+        return ArestasDoGrafo.obter(grafo);
     }
 
-    // Merge Sort: ordena o intervalo [inicio, fim).
+    // Merge Sort.
     private void ordenar(
             Aresta[] arestas,
             Aresta[] auxiliar,
@@ -157,9 +118,8 @@ public class Kruskal {
             int[] representante
     ) {
         while (vertice != representante[vertice]) {
-            // Encurta o caminho ate o representante.
             representante[vertice] =
-                    representante[representante[vertice]];
+                representante[representante[vertice]];
 
             vertice = representante[vertice];
         }
@@ -174,17 +134,15 @@ public class Kruskal {
             int[] altura
     ) {
         int raizOrigem =
-                encontrarRepresentante(origem, representante);
+            encontrarRepresentante(origem, representante);
 
         int raizDestino =
-                encontrarRepresentante(destino, representante);
+            encontrarRepresentante(destino, representante);
 
-        // Ja estao conectados: a ligacao formaria um ciclo.
         if (raizOrigem == raizDestino) {
             return false;
         }
 
-        // Liga o conjunto de menor altura ao de maior altura.
         if (altura[raizOrigem] < altura[raizDestino]) {
             representante[raizOrigem] = raizDestino;
 
@@ -206,17 +164,20 @@ public class Kruskal {
         int quantidadeVertices = grafo.numeroDeVertices();
 
         int quantidadeNecessaria =
-                Math.max(0, quantidadeVertices - 1);
+            Math.max(0, quantidadeVertices - 1);
 
         if (arestas == null
                 || arestas.size() != quantidadeNecessaria) {
             throw new IllegalArgumentException(
-                    "Quantidade de arestas invalida para uma arvore."
+                "Quantidade de arestas invalida para uma arvore."
             );
         }
 
-        int[] representante = new int[quantidadeVertices];
-        int[] altura = new int[quantidadeVertices];
+        int[] representante =
+            new int[quantidadeVertices];
+
+        int[] altura =
+            new int[quantidadeVertices];
 
         for (int vertice = 0;
              vertice < quantidadeVertices;
@@ -236,7 +197,7 @@ public class Kruskal {
                     altura
             )) {
                 throw new IllegalArgumentException(
-                        "As arestas informadas formam um ciclo."
+                    "As arestas informadas formam um ciclo."
                 );
             }
 
@@ -251,13 +212,15 @@ public class Kruskal {
             Aresta aresta
     ) throws Exception {
         if (aresta == null) {
-            throw new IllegalArgumentException("Aresta nula.");
+            throw new IllegalArgumentException(
+                "Aresta nula."
+            );
         }
 
         for (Aresta original :
                 grafo.arestasEntre(
-                        aresta.origem(),
-                        aresta.destino()
+                    aresta.origem(),
+                    aresta.destino()
                 )) {
 
             if (Double.compare(
@@ -269,7 +232,7 @@ public class Kruskal {
         }
 
         throw new IllegalArgumentException(
-                "Aresta ou peso nao pertence ao grafo."
+            "Aresta ou peso nao pertence ao grafo."
         );
     }
 }

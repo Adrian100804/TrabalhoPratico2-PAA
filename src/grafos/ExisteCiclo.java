@@ -35,63 +35,41 @@ public class ExisteCiclo {
             Aresta[][] adjacencias,
             int[] estado
     ) {
+        int[] pilha = new int[estado.length];
+        int[] proxima = new int[estado.length];
+
+        int topo = 0;
+
+        pilha[0] = origem;
         estado[origem] = 1;
 
-        for (Aresta aresta : adjacencias[origem]) {
-            int destino = aresta.destino().id();
+        while (topo >= 0) {
+            int atual = pilha[topo];
 
-            // Uma aresta para um vertice ainda em exploracao
-            // fecha um ciclo no grafo orientado.
-            if (estado[destino] == 1) {
+            if (proxima[atual] >= adjacencias[atual].length) {
+                estado[atual] = 2;
+                topo--;
+                continue;
+            }
+
+            int vizinho =
+                adjacencias[atual][proxima[atual]++]
+                    .destino().id();
+
+            if (estado[vizinho] == 1) {
                 return true;
             }
 
-            if (estado[destino] == 0) {
-                if (visitar(destino, adjacencias, estado)) {
-                    return true;
-                }
+            if (estado[vizinho] == 0) {
+                estado[vizinho] = 1;
+                pilha[++topo] = vizinho;
             }
         }
-
-        estado[origem] = 2;
 
         return false;
     }
 
     private Aresta[][] prepararAdjacencias(Grafo grafo) {
-        int quantidadeVertices = grafo.numeroDeVertices();
-
-        Aresta[][] resultado = new Aresta[quantidadeVertices][];
-
-        try {
-            for (int origem = 0;
-                 origem < quantidadeVertices;
-                 origem++) {
-
-                Vertice verticeOrigem = new Vertice(origem);
-                ArrayList<Aresta> saidas = new ArrayList<>();
-
-                for (Vertice destino :
-                        grafo.adjacentesDe(verticeOrigem)) {
-
-                    saidas.addAll(
-                            grafo.arestasEntre(
-                                    verticeOrigem,
-                                    destino
-                            )
-                    );
-                }
-
-                resultado[origem] = saidas.toArray(new Aresta[0]);
-            }
-
-        } catch (Exception erro) {
-            throw new IllegalArgumentException(
-                    "Nao foi possivel consultar as arestas do grafo.",
-                    erro
-            );
-        }
-
-        return resultado;
+        return ArestasDoGrafo.porOrigem(grafo);
     }
 }

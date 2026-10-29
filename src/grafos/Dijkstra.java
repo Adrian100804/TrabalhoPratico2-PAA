@@ -20,7 +20,7 @@ public class Dijkstra {
         for (Aresta aresta : arestas) {
             if (aresta.peso() < 0) {
                 throw new IllegalArgumentException(
-                        "Dijkstra nao admite pesos negativos."
+                    "Dijkstra nao admite pesos negativos."
                 );
             }
         }
@@ -43,7 +43,6 @@ public class Dijkstra {
 
             int atual = -1;
 
-            // Procura o vertice nao visitado de menor distancia.
             for (int vertice = 0;
                  vertice < quantidadeVertices;
                  vertice++) {
@@ -55,7 +54,6 @@ public class Dijkstra {
                 }
             }
 
-            // Nao restam vertices alcancaveis para processar.
             if (atual == -1
                     || Double.isInfinite(distancia[atual])) {
                 break;
@@ -63,7 +61,6 @@ public class Dijkstra {
 
             visitado[atual] = true;
 
-            // A menor distancia ate o destino ja foi definida.
             if (atual == t) {
                 break;
             }
@@ -72,9 +69,8 @@ public class Dijkstra {
                 int vizinho = aresta.destino().id();
 
                 double novaDistancia =
-                        distancia[atual] + aresta.peso();
+                    distancia[atual] + aresta.peso();
 
-                // Relaxamento: melhora o caminho conhecido.
                 if (!visitado[vizinho]
                         && novaDistancia < distancia[vizinho]) {
                     distancia[vizinho] = novaDistancia;
@@ -85,13 +81,12 @@ public class Dijkstra {
 
         if (Double.isInfinite(distancia[t])) {
             throw new IllegalArgumentException(
-                    "Nao existe caminho entre os vertices informados."
+                "Nao existe caminho entre os vertices informados."
             );
         }
 
-        // Reconstrucao do destino ate a origem.
         Aresta[] caminhoInvertido =
-                new Aresta[quantidadeVertices];
+            new Aresta[quantidadeVertices];
 
         int quantidadeArestas = 0;
         int atual = t;
@@ -103,9 +98,8 @@ public class Dijkstra {
             atual = aresta.origem().id();
         }
 
-        // Conversao somente para o retorno exigido pela interface.
         ArrayList<Aresta> caminho =
-                new ArrayList<>(quantidadeArestas);
+            new ArrayList<>(quantidadeArestas);
 
         for (int i = quantidadeArestas - 1; i >= 0; i--) {
             caminho.add(caminhoInvertido[i]);
@@ -121,78 +115,37 @@ public class Dijkstra {
         if (vertice == null
                 || vertice.id() < 0
                 || vertice.id() >= quantidadeVertices) {
-            throw new IllegalArgumentException("Vertice invalido.");
+            throw new IllegalArgumentException(
+                "Vertice invalido."
+            );
         }
 
         return vertice.id();
     }
 
     private Aresta[] obterArestas(Grafo grafo) {
-        Aresta[] resultado =
-                new Aresta[grafo.numeroDeArestas()];
-
-        int posicao = 0;
-
-        try {
-            for (int origem = 0;
-                 origem < grafo.numeroDeVertices();
-                 origem++) {
-
-                Vertice verticeOrigem = new Vertice(origem);
-
-                for (Vertice destino :
-                        grafo.adjacentesDe(verticeOrigem)) {
-
-                    for (Aresta aresta :
-                            grafo.arestasEntre(
-                                    verticeOrigem,
-                                    destino
-                            )) {
-
-                        if (posicao >= resultado.length) {
-                            throw new IllegalArgumentException(
-                                    "Quantidade de arestas inconsistente."
-                            );
-                        }
-
-                        resultado[posicao++] = aresta;
-                    }
-                }
-            }
-
-        } catch (Exception erro) {
-            throw new IllegalArgumentException(
-                    "Nao foi possivel consultar as arestas do grafo.",
-                    erro
-            );
-        }
-
-        if (posicao != resultado.length) {
-            throw new IllegalArgumentException(
-                    "Quantidade de arestas inconsistente."
-            );
-        }
-
-        return resultado;
+        return ArestasDoGrafo.obter(grafo);
     }
 
     private Aresta[][] prepararAdjacencias(
             int quantidadeVertices,
             Aresta[] arestas
     ) {
-        int[] quantidadeSaidas = new int[quantidadeVertices];
+        int[] quantidadeSaidas =
+            new int[quantidadeVertices];
 
         for (Aresta aresta : arestas) {
             quantidadeSaidas[aresta.origem().id()]++;
         }
 
-        Aresta[][] resultado = new Aresta[quantidadeVertices][];
+        Aresta[][] resultado =
+            new Aresta[quantidadeVertices][];
 
         for (int vertice = 0;
              vertice < quantidadeVertices;
              vertice++) {
             resultado[vertice] =
-                    new Aresta[quantidadeSaidas[vertice]];
+                new Aresta[quantidadeSaidas[vertice]];
         }
 
         int[] posicao = new int[quantidadeVertices];
@@ -218,7 +171,9 @@ public class Dijkstra {
         int t = validarVertice(destino, quantidadeVertices);
 
         if (caminho == null) {
-            throw new IllegalArgumentException("Caminho nulo.");
+            throw new IllegalArgumentException(
+                "Caminho nulo."
+            );
         }
 
         int atual = s;
@@ -229,7 +184,7 @@ public class Dijkstra {
 
             if (aresta.origem().id() != atual) {
                 throw new IllegalArgumentException(
-                        "As arestas nao formam um caminho continuo."
+                    "As arestas nao formam um caminho continuo."
                 );
             }
 
@@ -239,7 +194,7 @@ public class Dijkstra {
 
         if (atual != t) {
             throw new IllegalArgumentException(
-                    "O caminho nao termina no destino informado."
+                "O caminho nao termina no destino informado."
             );
         }
 
@@ -251,13 +206,15 @@ public class Dijkstra {
             Aresta aresta
     ) throws Exception {
         if (aresta == null) {
-            throw new IllegalArgumentException("Aresta nula.");
+            throw new IllegalArgumentException(
+                "Aresta nula."
+            );
         }
 
         for (Aresta original :
                 grafo.arestasEntre(
-                        aresta.origem(),
-                        aresta.destino()
+                    aresta.origem(),
+                    aresta.destino()
                 )) {
 
             if (Double.compare(
@@ -269,7 +226,7 @@ public class Dijkstra {
         }
 
         throw new IllegalArgumentException(
-                "Aresta ou peso nao pertence ao grafo."
+            "Aresta ou peso nao pertence ao grafo."
         );
     }
 }

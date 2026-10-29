@@ -46,13 +46,16 @@ public class BuscaProfundidade {
 
         if (inicio < 0 || inicio >= quantidadeVertices) {
             throw new IllegalArgumentException(
-                    "Vertice inicial invalido."
+                "Vertice inicial invalido."
             );
         }
 
         adjacencias = prepararAdjacencias(grafo);
 
-        visitar(inicio);
+        int[] pilha = new int[quantidadeVertices];
+        int[] proxima = new int[quantidadeVertices];
+
+        visitar(inicio, pilha, proxima);
 
         // Visita tambem os vertices nao alcancados pela origem.
         for (int vertice = 0;
@@ -60,7 +63,7 @@ public class BuscaProfundidade {
              vertice++) {
 
             if (descoberta[vertice] == 0) {
-                visitar(vertice);
+                visitar(vertice, pilha, proxima);
             }
         }
 
@@ -68,70 +71,66 @@ public class BuscaProfundidade {
     }
 
     private Aresta[][] prepararAdjacencias(Grafo grafo) {
-        int quantidadeVertices = grafo.numeroDeVertices();
-
-        Aresta[][] resultado = new Aresta[quantidadeVertices][];
-
-        try {
-            for (int origem = 0;
-                 origem < quantidadeVertices;
-                 origem++) {
-
-                Vertice verticeOrigem = new Vertice(origem);
-                ArrayList<Aresta> saidas = new ArrayList<>();
-
-                for (Vertice destino :
-                        grafo.adjacentesDe(verticeOrigem)) {
-
-                    saidas.addAll(
-                            grafo.arestasEntre(
-                                    verticeOrigem,
-                                    destino
-                            )
-                    );
-                }
-
-                resultado[origem] = saidas.toArray(new Aresta[0]);
-            }
-
-        } catch (Exception erro) {
-            throw new IllegalArgumentException(
-                    "Nao foi possivel consultar as arestas do grafo.",
-                    erro
-            );
-        }
-
-        return resultado;
+        return ArestasDoGrafo.porOrigem(grafo);
     }
 
-    private void visitar(int origem) {
+    // DFS iterativa para suportar caminhos longos.
+    private void visitar(
+            int origem,
+            int[] pilha,
+            int[] proxima
+    ) {
+        int topo = 0;
+
+        pilha[0] = origem;
         descoberta[origem] = ++tempo;
 
-        for (Aresta aresta : adjacencias[origem]) {
+        while (topo >= 0) {
+            int atual = pilha[topo];
+
+            if (proxima[atual] >= adjacencias[atual].length) {
+                finalizacao[atual] = ++tempo;
+                topo--;
+                continue;
+            }
+
+            Aresta aresta =
+                adjacencias[atual][proxima[atual]++];
+
             int destino = aresta.destino().id();
 
             if (descoberta[destino] == 0) {
-                // O destino ainda nao foi descoberto.
                 arvore.add(aresta);
-                pai[destino] = origem;
-
-                visitar(destino);
+                pai[destino] = atual;
+                descoberta[destino] = ++tempo;
+                pilha[++topo] = destino;
 
             } else if (finalizacao[destino] == 0) {
-                // O destino ainda esta em exploracao.
                 retorno.add(aresta);
 
-            } else if (descoberta[origem] < descoberta[destino]) {
-                // O destino e um descendente ja finalizado.
+            } else if (descoberta[atual] < descoberta[destino]) {
                 avanco.add(aresta);
 
             } else {
-                // O destino pertence a outro ramo ja explorado.
                 cruzamento.add(aresta);
             }
         }
+    }
 
-        finalizacao[origem] = ++tempo;
+    public Collection<Aresta> arestasDeArvoreResultado() {
+        return new ArrayList<>(arvore);
+    }
+
+    public Collection<Aresta> arestasDeRetornoResultado() {
+        return new ArrayList<>(retorno);
+    }
+
+    public Collection<Aresta> arestasDeAvancoResultado() {
+        return new ArrayList<>(avanco);
+    }
+
+    public Collection<Aresta> arestasDeCruzamentoResultado() {
+        return new ArrayList<>(cruzamento);
     }
 
     public Collection<Aresta> arestasDeArvore(Grafo grafo) {

@@ -1,11 +1,22 @@
 package grafos;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class FluxoMaximo {
-
     private final int origem;
     private final int destino;
+
+    private static class Arco {
+        int destino;
+        double capacidade;
+        Arco inverso;
+
+        Arco(int destino, double capacidade) {
+            this.destino = destino;
+            this.capacidade = capacidade;
+        }
+    }
 
     public FluxoMaximo(int origem, int destino) {
         this.origem = origem;
@@ -13,49 +24,50 @@ public class FluxoMaximo {
     }
 
     public double executar(Grafo grafo) {
-        int quantidadeVertices = grafo.numeroDeVertices();
+        int n = grafo.numeroDeVertices();
 
-        validarVertice(origem, quantidadeVertices);
-        validarVertice(destino, quantidadeVertices);
+        validarVertice(origem, n);
+        validarVertice(destino, n);
 
         if (origem == destino) {
             throw new IllegalArgumentException(
-                    "A fonte e o sorvedouro devem ser diferentes."
+                "A fonte e o sorvedouro devem ser diferentes."
             );
         }
 
-        double[][] residual = prepararResidual(grafo);
+        ArrayList<Arco>[] rede = prepararRede(grafo);
 
-        int[] pai = new int[quantidadeVertices];
+        int[] pai = new int[n];
+        Arco[] caminho = new Arco[n];
+
         double fluxoTotal = 0;
 
-        while (buscarCaminho(residual, pai)) {
+        while (buscarCaminho(rede, pai, caminho)) {
             double aumento = Double.POSITIVE_INFINITY;
 
-            // Procura a menor capacidade disponivel no caminho.
-            int atual = destino;
-
-            while (atual != origem) {
-                int anterior = pai[atual];
-
+            for (int v = destino; v != origem; v = pai[v]) {
                 aumento = Math.min(
-                        aumento,
-                        residual[anterior][atual]
+                    aumento, caminho[v].capacidade
                 );
-
-                atual = anterior;
             }
 
-            // Atualiza as capacidades residuais.
-            atual = destino;
+            if (!(aumento > 0) || !Double.isFinite(aumento)) {
+                throw new IllegalStateException(
+                    "Caminho aumentante invalido."
+                );
+            }
 
-            while (atual != origem) {
-                int anterior = pai[atual];
+            if (fluxoTotal + aumento == fluxoTotal) {
+                throw new IllegalStateException(
+                    "Precisao insuficiente no calculo do fluxo."
+                );
+            }
 
-                residual[anterior][atual] -= aumento;
-                residual[atual][anterior] += aumento;
+            for (int v = destino; v != origem; v = pai[v]) {
+                Arco arco = caminho[v];
 
-                atual = anterior;
+                arco.capacidade -= aumento;
+                arco.inverso.capacidade += aumento;
             }
 
             fluxoTotal += aumento;
@@ -64,101 +76,89 @@ public class FluxoMaximo {
         return fluxoTotal;
     }
 
-    private void validarVertice(
-            int vertice,
-            int quantidadeVertices
-    ) {
-        if (vertice < 0 || vertice >= quantidadeVertices) {
+    private void validarVertice(int vertice, int n) {
+        if (vertice < 0 || vertice >= n) {
             throw new IllegalArgumentException(
-                    "Vertice invalido: " + vertice
+                "Vertice invalido: " + vertice
             );
         }
     }
 
-    private double[][] prepararResidual(Grafo grafo) {
-        int quantidadeVertices = grafo.numeroDeVertices();
+    @SuppressWarnings("unchecked")
+    private ArrayList<Arco>[] prepararRede(Grafo grafo) {
+        int n = grafo.numeroDeVertices();
 
-        double[][] residual =
-                new double[quantidadeVertices][quantidadeVertices];
+        ArrayList<Arco>[] rede =
+            (ArrayList<Arco>[]) new ArrayList[n];
 
-        try {
-            for (int u = 0; u < quantidadeVertices; u++) {
-                Vertice verticeOrigem = new Vertice(u);
-
-                for (Vertice verticeDestino :
-                        grafo.adjacentesDe(verticeOrigem)) {
-
-                    for (Aresta aresta :
-                            grafo.arestasEntre(
-                                    verticeOrigem,
-                                    verticeDestino
-                            )) {
-
-                        double capacidade = aresta.peso();
-                        int v = aresta.destino().id();
-
-                        if (!Double.isFinite(capacidade)
-                                || capacidade < 0) {
-                            throw new IllegalArgumentException(
-                                    "As capacidades devem ser finitas "
-                                            + "e nao negativas."
-                            );
-                        }
-
-                        // Lacos nao contribuem para o fluxo.
-                        if (u != v) {
-                            residual[u][v] += capacidade;
-                        }
-                    }
-                }
-            }
-
-        } catch (Exception erro) {
-            throw new IllegalArgumentException(
-                    "Nao foi possivel preparar as capacidades: "
-                            + erro.getMessage(),
-                    erro
-            );
+        for (int i = 0; i < n; i++) {
+            rede[i] = new ArrayList<>();
         }
 
-        return residual;
+        for (Aresta aresta : ArestasDoGrafo.obter(grafo)) {
+            int u = aresta.origem().id();
+            int v = aresta.destino().id();
+            double capacidade = aresta.peso();
+
+            if (!Double.isFinite(capacidade) || capacidade < 0) {
+                throw new IllegalArgumentException(
+                    "As capacidades devem ser finitas e nao negativas."
+                );
+            }
+
+            if (u == v || capacidade == 0) {
+                continue;
+            }
+
+            Arco direto = new Arco(v, capacidade);
+            Arco inverso = new Arco(u, 0);
+
+            direto.inverso = inverso;
+            inverso.inverso = direto;
+
+            rede[u].add(direto);
+            rede[v].add(inverso);
+        }
+
+        return rede;
     }
 
     private boolean buscarCaminho(
-            double[][] residual,
-            int[] pai
+            ArrayList<Arco>[] rede,
+            int[] pai,
+            Arco[] caminho
     ) {
-        int quantidadeVertices = residual.length;
+        int n = rede.length;
 
         Arrays.fill(pai, -1);
 
-        int[] fila = new int[quantidadeVertices];
-        int frente = 0;
-        int fim = 0;
+        int[] pilha = new int[n];
+        int[] proximo = new int[n];
 
-        fila[fim++] = origem;
-
-        // Marca a fonte como descoberta.
+        int topo = 0;
+        pilha[0] = origem;
         pai[origem] = origem;
 
-        while (frente < fim) {
-            int atual = fila[frente++];
+        while (topo >= 0) {
+            int atual = pilha[topo];
 
-            for (int vizinho = 0;
-                 vizinho < quantidadeVertices;
-                 vizinho++) {
+            if (atual == destino) {
+                return true;
+            }
 
-                if (pai[vizinho] == -1
-                        && residual[atual][vizinho] > 0) {
+            if (proximo[atual] >= rede[atual].size()) {
+                topo--;
+                continue;
+            }
 
-                    pai[vizinho] = atual;
+            Arco arco = rede[atual].get(proximo[atual]++);
+            int vizinho = arco.destino;
 
-                    if (vizinho == destino) {
-                        return true;
-                    }
+            if (arco.capacidade > 0 && pai[vizinho] == -1) {
+                pai[vizinho] = atual;
+                caminho[vizinho] = arco;
 
-                    fila[fim++] = vizinho;
-                }
+                pilha[++topo] = vizinho;
             }
         }
 
